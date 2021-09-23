@@ -1,8 +1,8 @@
 import spacy
 import numpy as np
+import pickle
 
 nlp = spacy.load("en_core_web_lg")
-
 
 def cosine(x, y):
     return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
@@ -50,3 +50,18 @@ def most_similar_excluding_word(word, words_to_exclude, n):
     token = nlp(preprocess_word(word))[0]
 
     return most_similar_excluding(token.vector, words_to_exclude + [word], n)
+
+
+try:
+    with open("./nouns.pickle", "rb") as f:
+        nouns = pickle.load(f)
+except FileNotFoundError:
+    print("nouns.pickle not found: regenerating")
+    with open("./english-nouns.txt") as f:
+        nouns = []
+        for noun in f:
+            noun_lem = preprocess_word(noun.strip())
+            nouns.append((noun_lem, get_vector(noun_lem)))
+
+    with open("./nouns.pickle", "wb") as f:
+        pickle.dump(nouns, f)
